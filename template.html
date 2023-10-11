@@ -116,6 +116,7 @@
       for(let input of lmnt.querySelectorAll("input"))
         {
           input.addEventListener("input", onChange)
+          makePreview()
         }
     }
 
@@ -176,8 +177,11 @@
         case "text" :
           document.querySelector(":root").style.setProperty("--text", target.value)
           break
-        case "background" :addElement
+        case "background" :
           document.querySelector(":root").style.setProperty("--background-preview", target.value)
+          break
+        case "valeur" : 
+          
           break
       }
       makePreview()
