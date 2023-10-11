@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+  <style>
+
+    :root
+    {
+      --dot : red;
+      --border: orange;
+      --background : coral;
+      --background-preview : pink;
+    }
+
+    #preview{
+      display: flex;
+      border:3px solid var(--border);
+      width: 600px;
+      padding: 10px;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 50px;
+      background-color: var(--background-preview);
+    }
+
+    h1{
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+    h2
+    {
+      text-align: center;
+    }
+
+    .hide
+    {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    .previewedElement
+    {
+      width: 33%;
+    }
+
+    .backgroundBar
+    {
+      background-color: var(--background);
+      width: 80%;
+      margin: auto;
+      height: 30px;
+      position: relative;
+      border-radius: 15px;
+    }
+
+    .dot
+    {
+      position : absolute;
+      width: 10px;
+      height: 40px;
+      background-color: var(--dot);
+      bottom: -5px;
+      left: calc(-5px +var(--value));
+      border-radius: 5px;
+    }
+
+    #preview *
+    {
+      color : var(--color)
+    }
+
+  </style>
+</head>
+<body>
+  <main id="controller">
+    <section>
+      <label for="nomPerso">Nom du perso : </label><input type="text" name="nomPerso" id="nomPerso"><br>
+      <label for="background">Background couleur : </label><input  type="color" name="background" id="background" placeholder="coral"><br>
+      <label for="border">Border : </label><input type="color" value="orange" name="border" id="border"><br>
+      <label for="background-color">Background barre : </label> <input value="pink" type="color" id="background-color"><br>
+      <label for="dot">Point : </label><input type="color" name="dot" id="dot"><br>
+      <label for="text">Couleur texte</label><input type="color" value="red" name="text" id="text"><br>
+    </section>
+    <section>
+      <button type="button" onclick="addElement()">ajouter élément</button>
+      <p>Les valeurs vont de 0 à 100</p>
+    </section>
+    <section id="elementList">
+
+    </section>
+    <button type="button" onclick="makePreview()">faire preview</button>
+  </main>
+
+
+  <section id="preview" class="hide">
+
+  </section>
+  <script>
+    let idIncr = 0
+    function addElement()
+    {
+      let template = document.querySelector("#element")
+      let elementList = document.querySelector("#elementList")
+
+      elementList.appendChild(template.content.cloneNode(true))
+      let lmnt = elementList.lastElementChild 
+      lmnt.id = "debut"+idIncr
+      lmnt.querySelector("#delete").setAttribute("onclick", "supressElement('"+lmnt.id+"')")
+      console.log(elementList.lastElementChild )
+      idIncr++
+
+      for(let input of lmnt.querySelectorAll("input"))
+        {
+          input.addEventListener("input", onChange)
+        }
+    }
+
+    function supressElement(id)
+    {
+      document.querySelector("#"+id).remove()
+    }
+
+    function makePreview()
+    {
+      let preview = document.querySelector("#preview")
+      preview.innerHTML = ""
+
+      let list = document.querySelector("#elementList")
+      let tmplt = document.querySelector("#previewedElementTemplate")
+      preview.appendChild(document.createElement("h1")).innerText = document.querySelector("#nomPerso").value
+      for( let lmnt of list.children)
+      {
+        console.log(lmnt)
+        preview.appendChild(tmplt.content.cloneNode(true))
+        let clone = preview.lastElementChild
+        clone.querySelector(".name").innerText = lmnt.querySelector("#nom").value
+        clone.style.setProperty("--value", lmnt.querySelector("#valeur").value+"%")
+
+      }
+
+      makeImage()
+    }
+
+    function makeImage()
+    {
+      let preview =document.querySelector("#preview")
+      preview.classList.remove("hide") 
+      html2canvas(preview).then(canvas => {
+        document.querySelector("img")?.remove()
+        let img = document.body.appendChild(document.createElement("img"))
+        img.width = canvas.width
+        img.height = canvas.height
+        //canvas.getContext("2d").drawImage(img,0,0, canvas.width, canvas.height)
+        img.src = canvas.toDataURL()
+      });
+      preview.classList.add("hide")
+    }
+
+    function onChange(e)
+    {
+      let target = e.target;
+      switch (target.id) {
+        case "background-color":
+        document.querySelector(":root").style.setProperty("--background", target.value)
+          break;
+        case "border" :
+        document.querySelector(":root").style.setProperty("--border", target.value)
+          break;
+        case "dot" :
+        document.querySelector(":root").style.setProperty("--dot", target.value)
+          break;
+        case "text" :
+          document.querySelector(":root").style.setProperty("--text", target.value)
+          break
+        case "background" :addElement
+          document.querySelector(":root").style.setProperty("--background-preview", target.value)
+          break
+      }
+      makePreview()
+    }
+
+    document.querySelector("#nomPerso").addEventListener("change", onChange)
+    document.querySelector("#background").addEventListener("change", onChange)
+    document.querySelector("#background-color").addEventListener("change", onChange)
+    document.querySelector("#border").addEventListener("change", onChange)
+    document.querySelector("#dot").addEventListener("change", onChange)
+    document.querySelector("#text").addEventListener("change", onChange)
+  </script>
+  <template id="element">
+    <section class="elementController">
+      <label for="nom">Nom : </label><input value="nom" type="text" name="nom" id="nom"><br>
+      <label for="valeur">Valeur : </label><input value="0"id="valeur" type="number">
+      <button id="delete" type="button">effacer</button>
+    </section>
+  </template>
+
+  <template id="previewedElementTemplate">
+
+    <section class="previewedElement">
+      <h2 class="name">default name</h2><br>
+      <div class="backgroundBar">
+        <div class="dot"></div>
+      </div>
+      
+    </section>
+  </template>
+</body>
+</html>
